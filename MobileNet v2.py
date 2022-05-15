@@ -5,7 +5,6 @@
    (https://arxiv.org/abs/1801.04381)
 """
 
-
 import tensorflow as tf
 from tensorflow.keras.layers import *
 from tensorflow.keras import Model,layers,Sequential
@@ -13,91 +12,114 @@ import numpy as np
 from tensorflow.keras.utils import plot_model
 
 
-def _conv_block(input_tensor,filter_num,kernel_size=(3,3),stride=1):
+def _stem_conv(input_tensor,filter_num,kernel_size=(3,3),stride=1):
     x=Conv2D(filter_num,kernel_size,
              strides=stride,
              padding='same',
-             name='conv_1')(input_tensor)
-    x=BatchNormalization(name='conv_1_bn')(x)
-    x=ReLU(max_value=6.0,name='conv_1_relu')(x)
+             name='stem_conv')(input_tensor)
+    x=BatchNormalization(name='stem_conv_bn')(x)
+    x=ReLU(max_value=6.0,name='stem_conv_relu')(x)
     return x
 
-def _depthwise_conv_block(input_tensor,filter_num,kernel_size=(3,3),stride=1,block_id=1):
+def _bottleneck(input_tensor,filter_num,stride=1,alpha=1):
+    in_channels=input_tensor.shape[-1]
+    x = Conv2D(int(in_channels)*alpha, (1, 1),
+               strides=1,
+               padding='same'
+               )(input_tensor)
+    x = BatchNormalization()(x)
+    x = ReLU(max_value=6.0)(x)
+
     x=DepthwiseConv2D((3,3),strides=stride,
                       depth_multiplier=1,
-                      padding='same',
-                      name='conv_dw_%d'% block_id)(input_tensor)
-    x=BatchNormalization(name='conv_dw_bn_%d'% block_id)(x)
-    x=ReLU(max_value=6.0,name='conv_dw_relu_%d'% block_id)(x)
-
+                      padding='same'
+                      )(input_tensor)
+    x=BatchNormalization()(x)
+    x=ReLU(max_value=6.0)(x)
 
     x=Conv2D(filter_num,(1,1),
              strides=1,
              padding='same',
-             name='conv_pw_%d'% block_id)(x)
-    x=BatchNormalization(name='conv_pw_bn_%d'% block_id)(x)
-    x=ReLU(max_value=6.0,name='conv_pw_relu_%d'% block_id)(x)
+             activation=None)(x)
+    x=BatchNormalization()(x)
+
+    if x.shape[-1]==input_tensor.shape[-1] and stride==1:
+        out=Add()([x,input_tensor])
+
+    else:
+        out=x
+
+    return out
+
+
+def _inverted_residual_block(inputs,filter_num,strides,block_num,alpha):
+    x=_bottleneck(inputs,filter_num,stride=strides,alpha=alpha)
+
+    for i in range(1,block_num):
+        x=_bottleneck(x,filter_num,stride=1,alpha=alpha)
+
     return x
 
 
-def MobileNet(input_shape=[224,224,3],
+def MobileNetv2(input_shape=[224,224,3],
               num_classes=1000,
               include_top=True):
+    '''
+     #  t, c, n, s
+        [1, 16, 1, 1],
+        [6, 24, 2, 2],
+        [6, 32, 3, 2],
+        [6, 64, 4, 2],
+        [6, 96, 3, 1],
+        [6, 160, 3, 2],
+        [6, 320, 1, 1],
+
+    '''
+
     inputs=Input(shape=input_shape)
     # 224,224,3 -> 112,112,32
-    stem=_conv_block(inputs,32,stride=2)
+    stem=_stem_conv(inputs,32,stride=2)
 
-    # 112,112,32 -> 112,112,64
-    x=_depthwise_conv_block(stem,64,block_id=1)
+    # 112,112,32 -> 112,112,16
+    x = _bottleneck(stem,16,alpha=1)
 
+    # 112,112,16-> 56,56,24
+    x = _inverted_residual_block(x, 24, strides=2, block_num=2, alpha=6)
 
-    # 112,112,64 -> 56,56,128
-    x=_depthwise_conv_block(x,128,stride=2,block_id=2)
+    # 56,56,24 -> 28,28,32
+    x = _inverted_residual_block(x, 32, strides=2, block_num=3, alpha=6)
 
+    # 28,28,32 -> 14,14,64
+    x = _inverted_residual_block(x, 64, strides=2, block_num=4, alpha=6)
 
-    # 56,56,128 -> 56,56,128
-    x = _depthwise_conv_block(x, 128, block_id=3)
+    # 14,14,64 -> 14,14,96
+    x = _inverted_residual_block(x, 96, strides=1, block_num=3, alpha=6)
 
-    # 56,56,128 -> 28,28,256
-    x = _depthwise_conv_block(x, 256,stride=2, block_id=4)
+    # 14,14,96 -> 7,7,160
+    x = _inverted_residual_block(x, 160, strides=2, block_num=3, alpha=6)
 
+    # 7,7,160 -> 7,7,320
+    x = _inverted_residual_block(x, 320, strides=1, block_num=1, alpha=6)
 
-    # 28,28,256 -> 28,28,256
-    x = _depthwise_conv_block(x, 256, block_id=5)
+    # 7,7,320 -> 7,7,1280
+    x = Conv2D(1280,(1,1),strides=1,padding='same')(x)
+    x = BatchNormalization()(x)
+    x = ReLU(max_value=6.0)(x)
 
-    # 28,28,256 -> 14,14,512
-    x = _depthwise_conv_block(x, 512,stride=2, block_id=6)
-
-    # 14,14,512 -> 14,14,512
-    x = _depthwise_conv_block(x, 512, block_id=7)
-    x = _depthwise_conv_block(x, 512, block_id=8)
-    x = _depthwise_conv_block(x, 512, block_id=9)
-    x = _depthwise_conv_block(x, 512, block_id=10)
-    x = _depthwise_conv_block(x, 512, block_id=11)
-    print(x.shape)
-
-
-    # 14,14,512 -> 7,7,1024
-    x = _depthwise_conv_block(x, 1024,stride=2, block_id=12)
-    x = _depthwise_conv_block(x, 1024, block_id=13)
-
-    # building classifier
     if include_top is True:
-         # 7,7,1024 -> 1,1,1024
-         x=AveragePooling2D(pool_size=(7,7),name='avg_pool')(x)
-
-         # 1,1,1024 -> [batch,1024]
-         x=Flatten(name='flatten')(x)
-         output=Dense(num_classes,activation='softmax',name='dense')(x)
+        # building classifier
+        x = layers.GlobalAveragePooling2D()(x)  # pool + flatten
+        x = layers.Dropout(0.2)(x)
+        output = layers.Dense(num_classes, name='Logits')(x)
     else:
-        output=x
+        output = x
 
     inputs=inputs
-    model = Model(inputs,output, name='mobilenetv1')
+    model = Model(inputs,output, name='mobilenetv2')
     return model
 
 
-model = MobileNet()
+model = MobileNetv2()
 model.summary()
 plot_model(model,to_file='model_1.png',show_layer_names=True,show_shapes=True,dpi=128)
 
