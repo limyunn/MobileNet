@@ -13,6 +13,9 @@ from tensorflow.keras.utils import plot_model
 
 
 def _stem_conv(input_tensor,filter_num,kernel_size=(3,3),stride=1):
+    '''
+    [B,H,W,C] = x.shape
+    '''
     x=Conv2D(filter_num,kernel_size,
              strides=stride,
              padding='same',
@@ -22,6 +25,9 @@ def _stem_conv(input_tensor,filter_num,kernel_size=(3,3),stride=1):
     return x
 
 def _bottleneck(input_tensor,filter_num,stride=1,alpha=1):
+    '''
+    [B,H,W,C] = x.shape
+    '''
     in_channels=input_tensor.shape[-1]
     x = Conv2D(int(in_channels)*alpha, (1, 1),
                strides=1,
@@ -53,6 +59,9 @@ def _bottleneck(input_tensor,filter_num,stride=1,alpha=1):
 
 
 def _inverted_residual_block(inputs,filter_num,strides,block_num,alpha):
+    '''
+    [B,H,W,C] = x.shape
+    '''
     x=_bottleneck(inputs,filter_num,stride=strides,alpha=alpha)
 
     for i in range(1,block_num):
@@ -73,6 +82,8 @@ def MobileNetv2(input_shape=[224,224,3],
         [6, 96, 3, 1],
         [6, 160, 3, 2],
         [6, 320, 1, 1],
+
+        [B,H,W,C] = x.shape
 
     '''
 
