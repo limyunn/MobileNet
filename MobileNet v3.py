@@ -144,7 +144,7 @@ def MobileNetv3_Large(input_shape=[224,224,3],
        x = Conv2D(num_classes,(1,1),strides=1, padding='same', activation='softmax')(x)
 
        # 1,1,1280 -> [batch,1000]
-       x = Reshape((x.shape[-1],))(x)
+       x = Reshape((num_classes,))(x)
 
 
     model = Model(inputs, x)
