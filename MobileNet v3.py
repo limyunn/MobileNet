@@ -201,6 +201,7 @@ def MobileNetv3_Small(input_shape=[224,224,3],
 
        # 1,1,1024 -> 1,1,1000
        x = Conv2D(num_classes,(1,1),strides=1, padding='same', activation='softmax')(x)
+       x = Reshape((num_classes,))(x)
 
        model = Model(inputs, x)
 
