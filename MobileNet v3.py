@@ -201,6 +201,8 @@ def MobileNetv3_Small(input_shape=[224,224,3],
 
        # 1,1,1024 -> 1,1,1000
        x = Conv2D(num_classes,(1,1),strides=1, padding='same', activation='softmax')(x)
+
+       # 1,1,1024 -> [batch,1000]
        x = Reshape((num_classes,))(x)
 
        model = Model(inputs, x)
@@ -209,5 +211,5 @@ def MobileNetv3_Small(input_shape=[224,224,3],
 
 
 model=MobileNetv3_Small()
-model.summary()
+# model.summary()
 # plot_model(model,to_file='model_2.png',show_layer_names=True,show_shapes=True,dpi=128)
