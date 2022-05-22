@@ -31,7 +31,7 @@ def se_block(inputs,alpha=4):
     # [batch, height, width, channel] -> [batch, channel]
     x = GlobalAveragePooling2D()(inputs)
     x = Dense(int(inputs.shape[-1])/alpha,activation='relu')(x)
-    x = Dense(int(x.shape[-1])*alpha)(x)
+    x = Dense(int(x.shape[-1]))(x)
     x = Activation('sigmoid')(x)
     out = Multiply()([inputs,x])
     return out
@@ -51,8 +51,8 @@ def _stem_conv(input_tensor,filter_num,kernel_size=(3,3),stride=1):
 
 def _bottle_neck_(input_tensor,filter_num,mode,expansion,kernel_size=(3,3),stride=1,use_se=True):
     '''
-        [B,H,W,C] = x.shape
-        '''
+    [B,H,W,C] = x.shape
+    '''
     in_channels = input_tensor.shape[-1]
     x = Conv2D(expansion, (1, 1),
                strides=1,
