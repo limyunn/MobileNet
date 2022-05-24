@@ -2,7 +2,29 @@
   Reference:
   - [EfficientNet: Rethinking Model Scaling for Convolutional Neural Networks](
       https://arxiv.org/abs/1905.11946) (ICML 2019)
+
+Model           |  input_size  |  width_coefficient  |  depth_coefficient  | dropout_rate
+-------------------------------------------------------------------------------------------
+EfficientNetB0  |   224x224    |    1.0              |      1.0            |    0.2
+-------------------------------------------------------------------------------------------
+EfficientNetB1  |   240x240    |    1.0              |      1.1            |    0.2
+-------------------------------------------------------------------------------------------
+EfficientNetB2  |   260x260    |    1.1              |      1.2            |    0.3
+-------------------------------------------------------------------------------------------
+EfficientNetB3  |   300x300    |    1.2              |      1.4            |    0.3
+-------------------------------------------------------------------------------------------
+EfficientNetB4  |   380x380    |    1.4              |      1.8            |    0.4
+-------------------------------------------------------------------------------------------
+EfficientNetB5  |   456x456    |    1.6              |      2.2            |    0.4
+-------------------------------------------------------------------------------------------
+EfficientNetB6  |   528x528    |    1.8              |      2.6            |    0.5
+-------------------------------------------------------------------------------------------
+EfficientNetB7  |   600x600    |    2.0              |      3.1            |    0.5
+
 '''
+
+
+
 
 import tensorflow as tf
 from tensorflow.keras.layers import *
@@ -13,7 +35,7 @@ import tensorflow.keras.backend as K
 import math
 
 params_dict = {
-       # (width_coefficient, depth_coefficient, resolution, dropout_rate)
+       #(width_coefficient, depth_coefficient, resolution, dropout_rate)
       'efficientnet-b0': (1.0, 1.0, 224, 0.2),
       'efficientnet-b1': (1.0, 1.1, 240, 0.2),
       'efficientnet-b2': (1.1, 1.2, 260, 0.3),
@@ -23,6 +45,7 @@ params_dict = {
       'efficientnet-b6': (1.8, 2.6, 528, 0.5),
       'efficientnet-b7': (2.0, 3.1, 600, 0.5),
               }
+
 
 #-------------------------------------------------#
 #   swish activation
