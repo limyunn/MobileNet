@@ -23,9 +23,6 @@ EfficientNetB7  |   600x600    |    2.0              |      3.1            |    
 
 '''
 
-
-
-
 import tensorflow as tf
 from tensorflow.keras.layers import *
 from tensorflow.keras import Model,layers,Sequential
@@ -147,6 +144,7 @@ def round_filters(filters,width_coefficient,divisor=8):
 def round_repeats(repeats,depth_coefficient):
     """Round number of repeats based on depth multiplier."""
     return int(math.ceil(depth_coefficient * repeats))
+
 
 
 def stage(inputs,filter_num,kernel_size,strides,block_num,drop_rate,ratio):
