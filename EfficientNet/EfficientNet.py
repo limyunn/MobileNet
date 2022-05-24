@@ -231,7 +231,7 @@ def EfficientNet(width_coefficient,
 
 
 
-model=EfficientNet(2.0, 3.1, (600,600,3))
+model=EfficientNet(1.0,1.0)
 model.summary()
 print(len(model.layers))
 plot_model(model,to_file='efficient_model.png',show_layer_names=True,show_shapes=True,dpi=128)
@@ -252,7 +252,7 @@ def EfficientNetB0(
         model_name='efficientnet-b0',
         include_top=include_top, weights=weights,
         input_tensor=input_tensor, input_shape=input_shape,
-        pooling=pooling, classes=classes,
+        pooling=pooling, num_classes=classes,
         **kwargs
     )
 
@@ -271,7 +271,7 @@ def EfficientNetB1(
         model_name='efficientnet-b1',
         include_top=include_top, weights=weights,
         input_tensor=input_tensor, input_shape=input_shape,
-        pooling=pooling, classes=classes,
+        pooling=pooling, num_classes=classes,
         **kwargs
     )
 
@@ -288,7 +288,7 @@ def EfficientNetB2(include_top=True,
         model_name='efficientnet-b2',
         include_top=include_top, weights=weights,
         input_tensor=input_tensor, input_shape=input_shape,
-        pooling=pooling, classes=classes,
+        pooling=pooling, num_classes=classes,
         **kwargs
     )
 
@@ -305,7 +305,7 @@ def EfficientNetB3(include_top=True,
         model_name='efficientnet-b3',
         include_top=include_top, weights=weights,
         input_tensor=input_tensor, input_shape=input_shape,
-        pooling=pooling, classes=classes,
+        pooling=pooling, num_classes=classes,
         **kwargs
     )
 
@@ -324,7 +324,7 @@ def EfficientNetB4(
         model_name='efficientnet-b4',
         include_top=include_top, weights=weights,
         input_tensor=input_tensor, input_shape=input_shape,
-        pooling=pooling, classes=classes,
+        pooling=pooling, num_classes=classes,
         **kwargs
     )
 
@@ -343,7 +343,7 @@ def EfficientNetB5(
         model_name='efficientnet-b5',
         include_top=include_top, weights=weights,
         input_tensor=input_tensor, input_shape=input_shape,
-        pooling=pooling, classes=classes,
+        pooling=pooling, num_classes=classes,
         **kwargs
     )
 
@@ -362,7 +362,7 @@ def EfficientNetB6(
         model_name='efficientnet-b6',
         include_top=include_top, weights=weights,
         input_tensor=input_tensor, input_shape=input_shape,
-        pooling=pooling, classes=classes,
+        pooling=pooling, num_classes=classes,
         **kwargs
     )
 
@@ -381,7 +381,7 @@ def EfficientNetB7(
         model_name='efficientnet-b7',
         include_top=include_top, weights=weights,
         input_tensor=input_tensor, input_shape=input_shape,
-        pooling=pooling, classes=classes,
+        pooling=pooling, num_classes=classes,
         **kwargs
     )
 
@@ -400,7 +400,7 @@ def EfficientNetL2(
         model_name='efficientnet-l2',
         include_top=include_top, weights=weights,
         input_tensor=input_tensor, input_shape=input_shape,
-        pooling=pooling, classes=classes,
+        pooling=pooling, num_classes=classes,
         **kwargs
     )
 
