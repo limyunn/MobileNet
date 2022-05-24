@@ -11,7 +11,6 @@ from tensorflow.keras import Model,layers,Sequential
 import numpy as np
 from tensorflow.keras.utils import plot_model
 
-
 def _stem_conv(input_tensor,filter_num,kernel_size=(3,3),stride=1):
     '''
     [B,H,W,C] = x.shape
@@ -39,7 +38,7 @@ def _bottleneck(input_tensor,filter_num,stride=1,alpha=1):
     x=DepthwiseConv2D((3,3),strides=stride,
                       depth_multiplier=1,
                       padding='same'
-                      )(input_tensor)
+                      )(x)
     x=BatchNormalization()(x)
     x=ReLU(max_value=6.0)(x)
 
@@ -83,8 +82,7 @@ def MobileNetv2(input_shape=[224,224,3],
         [6, 160, 3, 2],
         [6, 320, 1, 1],
 
-        [B,H,W,C] = x.shape
-
+        B,H,W,C] = x.shape
     '''
 
     inputs=Input(shape=input_shape)
