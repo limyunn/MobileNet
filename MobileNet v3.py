@@ -27,11 +27,11 @@ def se_block(inputs,alpha=4):
     '''
     [B,H,W,C] = x.shape
     '''
-
+    in_channels = inputs.shape[-1]
     # [batch, height, width, channel] -> [batch, channel]
     x = GlobalAveragePooling2D()(inputs)
-    x = Dense(int(inputs.shape[-1])/alpha,activation='relu')(x)
-    x = Dense(int(x.shape[-1]))(x)
+    x = Dense(int(in_channels)/alpha,activation='relu')(x)
+    x = Dense(int(in_channels))(x)
     x = Activation('sigmoid')(x)
     out = Multiply()([inputs,x])
     return out
@@ -64,7 +64,7 @@ def _bottle_neck_(input_tensor,filter_num,mode,expansion,kernel_size=(3,3),strid
     x = DepthwiseConv2D(kernel_size=kernel_size, strides=stride,
                         depth_multiplier=1,
                         padding='same'
-                        )(input_tensor)
+                        )(x)
     x = BatchNormalization()(x)
     x = get_activation(x,mode=mode)
 
@@ -105,7 +105,7 @@ def MobileNetv3_Large(input_shape=[224,224,3],
 
     # 56,56,24 -> 56,56,24
     x = _bottle_neck_(x, 24, 'RE', 72 , stride=1, use_se=False)
-
+    print(x.shape)
     # 56,56,24 -> 28,28,40
     x = _bottle_neck_(x, 40, 'RE', 72  , kernel_size=(5,5), stride=2 , use_se=True)
     x = _bottle_neck_(x, 40, 'RE', 120 , kernel_size=(5,5), stride=1 , use_se=True)
@@ -210,6 +210,6 @@ def MobileNetv3_Small(input_shape=[224,224,3],
        return model
 
 
-model=MobileNetv3_Small()
-# model.summary()
+model=MobileNetv3_Large()
+model.summary()
 # plot_model(model,to_file='model_2.png',show_layer_names=True,show_shapes=True,dpi=128)
