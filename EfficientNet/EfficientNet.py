@@ -30,6 +30,7 @@ import numpy as np
 from tensorflow.keras.utils import plot_model
 import tensorflow.keras.backend as K
 import math
+from keras_flops import get_flops
 
 params_dict = {
        #(width_coefficient, depth_coefficient, resolution, dropout_rate)
@@ -79,7 +80,7 @@ def se_block(inputs,alpha=4):
     x = Dense(int(in_channels)/alpha,activation='relu')(x)
     x = Dense(int(in_channels))(x)
     x = Activation('sigmoid')(x)
-    out = Multiply()([inputs,x])
+    out = layers.multiply([inputs, x])
     return out
 
 
@@ -226,7 +227,7 @@ def EfficientNet(width_coefficient,
 
     if include_top:
         # 7,7,320 ==> 7,7,1280
-        x = Conv2D(1280,(1,1),strides=1,padding='same')(x)
+        x = Conv2D(round_filters(1280,width_coefficient),(1,1),strides=1,padding='same')(x)
         x = BatchNormalization()(x)
         x = Activation(swish)(x)
 
@@ -254,6 +255,11 @@ def EfficientNet(width_coefficient,
 
 model=EfficientNet(1.0,1.0)
 model.summary()
+
+print('flops:', get_flops(model, batch_size=8))
+
+
+
 print(len(model.layers))
 plot_model(model,to_file='efficient_model.png',show_layer_names=True,show_shapes=True,dpi=128)
 
