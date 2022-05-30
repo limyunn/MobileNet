@@ -443,17 +443,6 @@ def EfficientNetV2_XL(include_top=True,
                      **kwargs):
 
 
-
-
-
-
-
-
-
-def main():
-    model=EfficientNetV2_L()
-    model.summary()
-    print('flops:', get_flops(model, batch_size=4))
-
-if __name__ == '__main__':
-    main()
+ model=EfficientNetV2_L()
+ model.summary()
+ print('flops:', get_flops(model, batch_size=4))
