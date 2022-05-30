@@ -31,6 +31,7 @@ from tensorflow.keras.utils import plot_model
 import tensorflow.keras.backend as K
 import math
 from keras_flops import get_flops
+import tensorflow_addons as tfa
 
 params_dict = {
        #(width_coefficient, depth_coefficient, resolution, dropout_rate)
@@ -43,6 +44,7 @@ params_dict = {
       'efficientnet-b6': (1.8, 2.6, 528, 0.5),
       'efficientnet-b7': (2.0, 3.1, 600, 0.5),
               }
+
 
 
 #-------------------------------------------------#
@@ -119,10 +121,14 @@ def MBConv(input_tensor,filter_num,drop_rate,ratio=6,kernel_size=(3,3),stride=1,
 
     if x.shape[-1] == input_tensor.shape[-1] and stride == 1:
         if drop_rate > 0:
-            x = layers.Dropout(rate=drop_rate,
-                               noise_shape=(None, 1, 1, 1),  # binary dropout mask
-                               )(x)
-        x = layers.add([x, input_tensor])
+
+            outputs = tfa.layers.StochasticDepth(1 - drop_rate)([input_tensor, x])
+
+        else:
+            outputs = layers.add([x, input_tensor])
+
+        return outputs
+
 
     return x
 
