@@ -62,6 +62,18 @@ v2_l_block = [  # about base * (width2.0, depth3.1)
     'r7_k3_s1_e6_i384_o640_se0.25',
 ]
 
+v2_xl_block = [  # only for 21k pretraining.
+    'r4_k3_s1_e1_i32_o32_c1',
+    'r8_k3_s2_e4_i32_o64_c1',
+    'r8_k3_s2_e4_i64_o96_c1',
+    'r16_k3_s2_e4_i96_o192_se0.25',
+    'r24_k3_s1_e6_i192_o256_se0.25',
+    'r32_k3_s2_e6_i256_o512_se0.25',
+    'r8_k3_s1_e6_i512_o640_se0.25',
+]
+
+
+
 #-------------------------------------------------#
 #   swish activation
 #-------------------------------------------------#
@@ -173,6 +185,7 @@ def MBConv(input_tensor,filter_num,drop_rate,expansion=6,kernel_size=(3,3),strid
     x = BatchNormalization()(x)
 
     if x.shape[-1] == input_tensor.shape[-1] and stride == 1:
+        # Stochastic depth
         if drop_rate > 0:
             x = layers.Dropout(rate=drop_rate,
                                noise_shape=(None, 1, 1, 1),  # binary dropout mask
@@ -234,7 +247,7 @@ def EfficientNetV2_base(width_coefficient,
                  depth_coefficient,
                  input_shape=(224, 224, 3),
                  dropout_rate=0.2,
-                 model_name="efficientnet",
+                 model_name=None,
                  pooling=None,
                  include_top=True,
                  cfg=None,
@@ -318,7 +331,7 @@ def EfficientNetV2_base(width_coefficient,
         elif pooling == 'max':
             x = layers.GlobalMaxPooling2D(name='max_pool')(x)
 
-    model = Model(img_input, x,name=model_name)
+    model = Model(img_input, x,name="EfficientNetV2"+model_name)
 
     return model
 
@@ -329,6 +342,7 @@ def EfficientNetV2_S(include_top=True,
                      input_shape=None,
                      pooling=None,
                      classes=1000,
+                     model_name='_S',
                      **kwargs):
     '''
       v2_s_block = [  # about base * (width1.4, depth1.8)
@@ -338,8 +352,7 @@ def EfficientNetV2_S(include_top=True,
     'r6_k3_s2_e4_i64_o128_se0.25',
     'r9_k3_s1_e6_i128_o160_se0.25',
     'r15_k3_s2_e6_i160_o256_se0.25',]
-
-      '''
+    '''
 
     # repeat, kernel, stride, expansion, in_c, out_c, operator, se_ratio
     cfg=[[2, 3, 1, 1, 24, 24, 0, 0],
@@ -351,7 +364,7 @@ def EfficientNetV2_S(include_top=True,
 
     return EfficientNetV2_base(1.4,1.8,
                                (380, 380, 3), dropout_rate=0.4,
-                               model_name='efficientnet-b4',
+                               model_name=model_name,
                                include_top=include_top, weights=weights,
                                input_tensor=input_tensor,pooling=pooling,
                                num_classes=classes,cfg=cfg,
@@ -366,6 +379,7 @@ def EfficientNetV2_M(include_top=True,
                      input_shape=None,
                      pooling=None,
                      classes=1000,
+                     model_name='_M',
                      **kwargs):
     '''
       v2_m_block = [  # about base * (width1.6, depth2.2)
@@ -376,8 +390,8 @@ def EfficientNetV2_M(include_top=True,
     'r14_k3_s1_e6_i160_o176_se0.25',
     'r18_k3_s2_e6_i176_o304_se0.25',
     'r5_k3_s1_e6_i304_o512_se0.25',]
+    '''
 
-      '''
     # repeat, kernel, stride, expansion, in_c, out_c, operator, se_ratio
     cfg=[[3, 3, 1, 1, 24, 24, 0, 0],
          [5, 3, 2, 4, 24, 48, 0, 0],
@@ -389,7 +403,7 @@ def EfficientNetV2_M(include_top=True,
 
     return EfficientNetV2_base(1.6,2.2,
                                (456, 456, 3), dropout_rate=0.4,
-                               model_name='efficientnet-b4',
+                               model_name=model_name,
                                include_top=include_top, weights=weights,
                                input_tensor=input_tensor, pooling=pooling,
                                num_classes=classes,cfg=cfg,
@@ -402,6 +416,7 @@ def EfficientNetV2_L(include_top=True,
                      input_shape=None,
                      pooling=None,
                      classes=1000,
+                     model_name='_L',
                      **kwargs):
     '''
       v2_l_block =[  # about base * (width2.0, depth3.1)
@@ -414,7 +429,6 @@ def EfficientNetV2_L(include_top=True,
     'r7_k3_s1_e6_i384_o640_se0.25',]
     '''
 
-
     # repeat, kernel, stride, expansion, in_c, out_c, operator, se_ratio
     cfg = [[4, 3, 1, 1, 32, 32, 0, 0],
            [7, 3, 2, 4, 32, 64, 0, 0],
@@ -426,7 +440,7 @@ def EfficientNetV2_L(include_top=True,
 
     return EfficientNetV2_base(2.0, 3.1,
                                (600, 600, 3), dropout_rate=0.4,
-                               model_name='efficientnet-b4',
+                               model_name=model_name,
                                include_top=include_top, weights=weights,
                                input_tensor=input_tensor, pooling=pooling,
                                num_classes=classes, cfg=cfg,
@@ -440,9 +454,39 @@ def EfficientNetV2_XL(include_top=True,
                      input_shape=None,
                      pooling=None,
                      classes=1000,
+                    model_name='_XL',
                      **kwargs):
+    '''
+    v2_xl_block = [  # only for 21k pretraining.
+    'r4_k3_s1_e1_i32_o32_c1',
+    'r8_k3_s2_e4_i32_o64_c1',
+    'r8_k3_s2_e4_i64_o96_c1',
+    'r16_k3_s2_e4_i96_o192_se0.25',
+    'r24_k3_s1_e6_i192_o256_se0.25',
+    'r32_k3_s2_e6_i256_o512_se0.25',
+    'r8_k3_s1_e6_i512_o640_se0.25',]
+    '''
+
+    # repeat, kernel, stride, expansion, in_c, out_c, operator, se_ratio
+    cfg = [ # only for 21k pretraining.
+        [4, 3, 1, 1, 32, 32, 1, None],
+        [8, 3, 2, 4, 32, 64, 1, None],
+        [8, 3, 2, 4, 64, 96, 1, None],
+        [16, 3, 2, 4, 96, 192, 0, 4],
+        [24, 3, 1, 6, 192, 256, 0, 4],
+        [32, 3, 2, 6, 256, 512, 0, 4],
+        [8, 3, 1, 6, 512, 640, 0, 4],
+    ]
+
+    return EfficientNetV2_base(2.4, 3.6,
+                               (600, 600, 3), dropout_rate=0.4,
+                               model_name=model_name,
+                               include_top=include_top, weights=weights,
+                               input_tensor=input_tensor, pooling=pooling,
+                               num_classes=classes, cfg=cfg,
+                               **kwargs)
 
 
- model=EfficientNetV2_L()
- model.summary()
- print('flops:', get_flops(model, batch_size=4))
+model=EfficientNetV2_L()
+model.summary()
+print('flops:', get_flops(model, batch_size=4))
